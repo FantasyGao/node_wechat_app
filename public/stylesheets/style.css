@@ -1,0 +1,62 @@
+body {
+  padding: 0px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: #00B7FF;
+}
+ #myform{
+   background: #efe9e9;
+   width: 50%;
+   margin-left: 25%;
+   height: 300px;
+   padding: 90px 50px;
+   border-radius: 8px;
+ }
+  #myform1{
+   background: #efe9e9;
+   width: 50%;
+   margin-left: 25%;
+   height: 300px;
+   padding: 40px 50px;
+   border-radius: 8px;
+ }
+#index .banner_ul{
+   list-style:none;
+   padding:0;
+   margin-top:12px;
+   background:#d6d0d0
+}
+#index .banner_ul li{
+  height: 30px;width: 80px;
+  padding:5px 12px;
+  border-radius: 3px;
+}
+#index .banner_ul li:hover{
+  background: gray;
+  box-shadow: 2px 2px;
+}
+.navbar1{background:#eee; height:66px;}
+.w_1{width:1300px; margin:0 auto;}
+.w{width:1200px; margin:0 auto;}
+.logo{padding-top:10px;}
+.logo img{width: 180px;height:47.3px;}
+.navbar1 a{color:#666; font-size:14px;}
+.navbar1 li{float:left; height:40px; line-height:40px; padding:10px 10px 0; font-size:14px;}
+.navbar1 li.fore{margin-right:10px}
+.navbar1 li.spacer{background:#ddd; height:12px; margin-top:25px;padding:10px; overflow:hidden; padding:0; width:1px;}
+#focus .item{position:absolute; width:100%; left:0; top:0; overflow:hidden; height:434px;}
+#focus .item .i-wrap{width:1200px; height:100%; margin:0 auto; overflow:hidden; position:relative;}
+img{border:none; vertical-align:middle;}
+body,div,ul,ol,li,h4,dl,dt,dd,p,h1,h2,h3,h4,h5{margin:0;padding:0}img{border:0}ul{list-style:none}
+body{font-size:12px;color:#333;font-family:\5FAE\8F6F\96C5\9ED1}
+.clr:after{content:".";display:block;height:0;clear:both;visibility:hidden;}
+.clr{zoom:1;}
+.clear{clear:both;height:0;font-size:0;overflow:hidden;}
+a{text-decoration:none;}
+body{font:14px/150%; font-family:Microsoft YaHei}
+.clearfix::after{clear: both;content: ".";display: block;height: 0;visibility: hidden;}
+.clear, .clr{ clear: both;display: block;height: 0; line-height:0; overflow:hidden;}
+.fl{float:left;}
+.fr{float:right;}

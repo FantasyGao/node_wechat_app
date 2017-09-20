@@ -1,0 +1,164 @@
+<%- include head %>
+<link rel='stylesheet' href='/stylesheets/wechat_kefu.css' />
+    <div id="container" >
+        <div class="navbar1">
+          <div class="w_1">
+              <div class="logo fl">
+                  <a href="/index"><img src="/images/logo.png"></a>
+                  <span style="font-size:22px;font-family:'kaiti'">健康公众号客服系统</span>
+                </div>
+                <div class="fr">
+                  <ul class="navbar1">
+                    <li><a href="/kefu/admin" style="color:black"><h4>在线解答<h4></a></li>
+                    <li><a href="/question" style="color:black"><h4>问题咨询</h4></a></li>
+                    <li><a href="/answer_all" style="color:black"><h4>群发消息</h4></a></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                    <li>用户名:<%=username %></li>
+                    <li class="spacer"></li>
+                    <li><a href="/login">退出</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+         <!--客服房间列表页-->
+        <div id="wrapper2" v-show="showAdminRoom">
+            <ul id="room">
+                <span class="btn">已在线客服列表</span>
+                <span class="btn">当前已有客服房间数为:{{RoomCount}}</span>
+                <span class="btn">当前在线人数为:{{Count}}</span>
+                <button class="btn btn-info pull-right" v-on:click="creatRoom()">点击创建房间</button>
+                <li v-for="item in roomList">{{item}}</li>
+            </ul>
+        </div>
+        <!--客服聊天页面-->
+        <div class="chat_page" v-show="!showAdminRoom">
+            <div id="wrapper1">
+                <ul id="messages">
+                </ul>
+            </div>
+            <div class="form">
+                <textarea id="m"  v-model="send_message">
+                </textarea>
+                <button v-on:click="send(send_message)">发送</button>
+            </div>
+            <div class="right_content">
+                <span><h3 style="margin-left:20px;">健康号客服为你服务！</h3></span>
+                    <div style="margin:10px 10px">
+                        <img style="margin:20px 50px" v-bind:src="picFlag" width="200px" height="100px"></img>
+                        <h4 style="margin:20px 50px">当前用户:<span id="roomName">{{nameFlag}}</span></h4></br>
+                        <h4 style="margin:20px 50px">所在城市:<span id="roomName"><b>{{cityFlag}}</b></span></h4>
+                    </div>
+            </div>
+        </div>
+    </div>
+<script src="/javascripts/socket.io.js"></script>
+<script>
+    var app = new Vue({
+        el: '#container',
+        data: {
+            name:"asdf",
+            roomList: [],
+            send_message:'',
+            RoomCount:0,
+            Count:0,
+            showAdminRoom:true,
+            nameFlag:'',
+            cityFlag:'',
+            picFlag:''
+        },
+        methods:{
+            creatRoom:function(){
+                socket.emit('adminCreatRoom','<%=username %>');
+            },
+            send:function(message){
+			    this.send_message = '';
+                socket.emit('sendMessage',message);
+            }
+        }
+    })
+    var socket = io.connect();
+    function showMsg(msg) {
+        $('#messages').append($('<li>').text(msg));
+    };
+    socket.on('sendMessage', function(name,msg){
+     console.log(name)
+         if(name.indexOf('|')==-1){
+            var message = '我说:'+msg;
+            showMsg(message);
+        } else{
+            var myName = name.split("|")[0];
+            var message = myName+'说:'+msg;
+            showMsg(message);
+        }
+    });
+    socket.on('systemMessage', function(msg){
+        showMsg(msg);
+    });
+    socket.emit('adminFlag','<%= username %>');
+    //刚进入刷新客服列表
+    socket.on('adminEnterRoom', getInfo);
+    //创建房间之后触发
+    socket.on('createRoom', getInfo);
+    socket.on('userChooseRoomToadmin', function(name) {
+        app._data.showAdminRoom = false;
+        app._data.nameFlag = name.split("|")[0];
+        app._data.cityFlag = name.split("|")[1];
+        app._data.picFlag = name.split("|")[2];
+        socket.emit('sendMessage',"欢迎您的咨询，请问有什么问题呢？");
+    });
+    socket.on('exitRoom', function(name) {
+        var userName = name.split("|")[0];
+        var message = userName+'离开了！'
+       showMsg(message);
+    });
+    socket.on('flashRoomList', getInfo);
+    //用户离开客服回到主页
+    socket.on('userLeave', getInfo);
+    //获取房间列表，房间数,在线总人数的回调函数
+    function getInfo(roomObject,Count){
+        var roomList=[];
+        var i=0;
+        for(var key in roomObject){
+            roomList[i]=roomObject[key];
+            i=i+1;
+        }
+        //获得可用房间
+        app._data.roomList = unipue(roomList);
+        //获得房间总数
+        app._data.RoomCount = getRoomCount(roomList);
+        app._data.Count = Count;
+    };      
+    //两层for循环去掉数组相同元素
+    function unipue(array){
+        var r = [];
+        for(var i = 0, l = array.length; i < l; i++) {
+            var temp = true;
+            for(var j = 0; j < l; j++){
+                if (i!=j&&array[i] === array[j]){
+                    temp = false;
+                }
+            }
+            if(temp){
+                r.push(array[i]);
+            }
+        }
+        return r;
+    };
+    //去重获得房间总数
+    function getRoomCount(array){
+        var r = [];
+        for(var i = 0, l = array.length; i < l; i++) {
+            for(var j = 0; j < l; j++){
+                if (array[i] === array[j]){
+                    j=i++
+                }
+                r.push(array[i]);
+            }
+        }
+        return r.length;
+    };
+</script>
+<%- include foot %>

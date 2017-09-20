@@ -1,0 +1,338 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <title>附近的医院</title>
+    <link rel="stylesheet" href="http://cache.amap.com/lbs/static/main1119.css"/>
+    <style type="text/css">
+        #panel {
+            position: fixed;
+            background-color: white;
+            overflow-y: auto;
+            top: 0px;
+            right: 0px;
+            width: 100%;
+            height: 100%;
+            border-bottom: solid 1px silver;
+            display: block;
+        }
+        #wayList {
+            z-index: 99;
+            position: absolute;
+            background-color: white;
+            max-height: 100%;
+            overflow-y: auto;
+            width: 100%;
+            display: none;
+        }
+         #tip {
+            height: 50px;
+            width: 80px;
+            position: absolute;
+            left: 10px;
+            top:80%;
+            background-color: #fff;
+            border: 1px solid #969696;
+            font-size: 12px;
+            border-radius: 3px;
+            line-height: 45px;
+        }
+        #tip input[type='button'] {
+            margin-left: 10px;
+            margin-right: 10px;
+            margin-top: 10px;
+            background-color: #0D9BF2;
+            height: 30px;
+            text-align: center;
+            line-height: 30px;
+            color: #fff;
+            font-size: 12px;
+            border-radius: 3px;
+            outline: none;
+            border: 0;
+            float: left;
+        }
+        #towhere{
+          z-index: 9999;
+          position: absolute;
+          background-color: #0D9BF2;
+          color: white;
+          bottom: 0px;
+          width: 100%;
+          height: 40px;
+          font-family: 'Microsoft YaHei';
+          text-align: center;
+          line-height: 40px;
+          display: none;
+        }
+        #way{
+          z-index: 9999;
+          position: absolute;
+          background-color: #F5F5D5;
+          bottom: 40px;
+          width: 100%;
+          height: 120px;
+          display: none;
+        }
+        #way .way{
+          background-color:  #F5F5D5;
+          width: 100%;
+          height: 30px;
+          font-family: 'Microsoft YaHei';
+          text-align: center;
+          line-height: 30px;
+        }
+        #way .way:hover{
+          background-color: gray;
+          opacity: 0.5;
+        }
+        #whereWay .wayBack{
+          z-index: 9999;
+          position: absolute;
+          bottom:0;
+          width: 100%;
+          height: 40px;
+          background: #0D9BF2;
+          line-height: 40px;
+          text-align: center;
+          display: none;
+        }
+    </style>
+  <script src="https://code.jquery.com/jquery-2.2.4.js" integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI=" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://webapi.amap.com/maps?v=1.3&key=e2804117413e87c402fd0ecfba013502&plugin=AMap.PlaceSearch"></script>
+  <script type="text/javascript" src="http://cache.amap.com/lbs/static/addToolbar.js"></script>
+</head>
+<body>
+<div id="container"></div>
+<div id="panel"></div>
+<div id="wayList"></div>
+<div id="whereWay">
+    <div id="way">
+        <div id="walk" class="way">步行</div>
+        <div id="byc" class="way">骑车</div>
+        <div id="tra" class="way">公交</div>
+        <div id="dri" class="way">自驾</div>
+    </div>
+    <div id="towhere">
+        去这
+    </div>
+    <div class="wayBack">返回</div>
+</div>
+<script type="text/javascript">
+    //去哪
+    $('#towhere').click(function(){
+        $('#way').css('display','block');
+    });
+    //返回
+    $('#whereWay .wayBack').click(function(){
+      if(confirm("确认退出该线路？")){
+        $('#wayList').css('display','none');
+        $('#whereWay .wayBack').css("display","none");
+        window.location.reload()
+      }
+    });
+    //隐藏
+    $(document).mouseup(function(e){
+      var _con = $('#whereWay');   // 设置目标区域
+        if(!_con.is(e.target) && _con.has(e.target).length === 0){
+        $('#way').css("display","none");
+        $('#towhere').css('display','none');
+        if($('#wayList').css("display")=='block'){
+           $('#whereWay .wayBack').css("display","block");
+        }
+      }
+    });
+    var map = new AMap.Map("container", {
+        resizeEnable: true
+    });
+    map.on('click',function(){
+      $('#container').css("z-index","9998");
+    })
+    //自定义定位标记
+    var toolBar,geolocation;
+    //自定义定位标记
+    map.plugin('AMap.Geolocation', function() {
+        geolocation = new AMap.Geolocation({
+            enableHighAccuracy: true,//是否使用高精度定位，默认:true
+            timeout: 10000,          //超过10秒后停止定位，默认：无穷大
+            buttonOffset: new AMap.Pixel(10, 20),//定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
+            zoomToAccuracy: true,      //定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
+            buttonPosition:'RB'
+        });
+        map.addControl(geolocation);
+        geolocation.getCurrentPosition();
+        AMap.event.addListener(geolocation, 'complete', onComplete);//返回定位信息
+        AMap.event.addListener(geolocation, 'error', onError);      //返回定位出错信息
+    });
+    //解析定位结果
+    function onComplete(data) {
+        var cpoint = [];
+        cpoint[0] = data.position.getLng();
+        cpoint[1] = data.position.getLat();
+        AMap.service(["AMap.PlaceSearch"], function() {
+            var placeSearch = new AMap.PlaceSearch({ //构造地点查询类
+                pageSize: 5,
+                pageIndex: 1,
+                type: '医院',
+                city: "北京市", //城市
+                map: map,
+                panel: "panel"
+            });
+            placeSearch.searchNearBy('', cpoint, 3000, function(status, result) {
+                if (status === 'complete' && result.info === 'OK') {
+                  //点击事件
+                      AMap.event.addListener(placeSearch, 'listElementClick',function(data) {
+                             var position = new Array(2);
+                             position[0] = data.data.location.lng;
+                             position[1] = data.data.location.lat;
+                             $('#towhere').css("display","block");
+                             //触发步行方式
+                             $('#walk').click(function(){
+                                 $('#wayList').css("display","block");
+                                 $('#panel').css("display","none");
+                                  transfer();
+                                  Ridebike();
+                                  driveCar();
+                                  walk();
+                                  walk(cpoint,position);
+                             });
+                             //触发公交方式
+                             $('#tra').click(function(){
+                                 $('#wayList').css("display","block");
+                                 $('#panel').css("display","none");
+                                 walk();
+                                 Ridebike();
+                                 driveCar();
+                                 transfer();
+                                 transfer(cpoint,position);
+                             });
+                             //触发骑行方式
+                             $('#byc').click(function(){
+                                 $('#wayList').css("display","block");
+                                 $('#panel').css("display","none");
+                                 walk();
+                                 transfer();
+                                 driveCar();
+                                 Ridebike();
+                                 Ridebike(cpoint,position);
+                             });
+                             //触发自驾方式
+                             $('#dri').click(function(){
+                                 $('#wayList').css("display","block");
+                                 $('#panel').css("display","none");
+                                 walk();
+                                 transfer();
+                                 Ridebike();
+                                 driveCar();
+                                 driveCar(cpoint,position);
+                             });
+                      });
+                      // AMap.event.addListener(placeSearch, 'markerClick',function(e) {
+                      //     console.log(data);
+                      // });
+                  }
+            });
+        });
+    };
+    //解析定位错误信息
+    function onError(data) {
+        document.getElementById('tip').innerHTML = '定位失败';
+    };
+    //步行
+    function walk(startPosition,endPosition){
+      if(arguments.length==0){
+        var clearT = true;
+      } else{
+        var clearT = false;
+      }
+    	AMap.service('AMap.Walking',function(){//回调函数
+    		//实例化Walking
+    		walking= new AMap.Walking({
+    			city: '北京市',
+    			map: map,
+    			panel: "wayList"
+    		});
+        if(clearT){
+          walking.clear();
+          return;
+        }
+    		//起点，终点 回调函数
+    		walking.search(startPosition,endPosition, function(status, result) {
+    			//TODO 解析返回结果，自己生成操作界面和地图展示界面
+    		});
+    	});
+    };
+    //公交
+    function transfer(startPosition,endPosition){
+      if(arguments.length==0){
+        var clearT = true;
+      } else{
+        var clearT = false;
+      }
+      AMap.service('AMap.Transfer',function(){//回调函数
+      //实例化Transfer
+        transfering= new AMap.Transfer({
+          city: '北京市',
+          map:map,
+          panel:"wayList",
+        });
+        if(clearT){
+          transfering.clear();
+          return;
+        }
+        transfering.search(startPosition, endPosition,function(status, result) {
+             //TODO 解析返回结果，自己生成操作界面和地图展示界面
+        });
+      });
+    };
+    //自驾
+    function driveCar(startPosition,endPosition){
+      if(arguments.length==0){
+        var clearT = true;
+      } else{
+        var clearT = false;
+      }
+    	AMap.service('AMap.Driving',function(){//回调函数
+    		//实例化Driving
+    		Driving = new AMap.Driving({
+    			city: '北京市',
+    			map: map,
+    			panel: "wayList"
+    		});
+        if(clearT){
+          Driving .clear();
+          return;
+        }
+    		Driving.search(startPosition,endPosition, function(status, result) {
+    		     //TODO 解析返回结果，自己生成操作界面和地图展示界面
+    		});
+    	});
+    };
+    //骑车
+    function Ridebike(startPosition,endPosition){
+        if(arguments.length==0){
+          var clearT = true;
+        } else{
+          var clearT = false;
+        }
+        AMap.service('AMap.Riding',function(){//回调函数
+    		//实例化Driving
+    		Riding= new AMap.Riding({
+    			city: '北京市',
+    			map: map,
+    			panel: "wayList"
+    		});
+        if(clearT){
+          Riding.clear();
+          return;
+        }
+    		Riding.search(startPosition,endPosition, function(status, result) {
+    			//TODO 解析返回结果，自己生成操作界面和地图展示界面
+    		});
+    	});
+    };
+</script>
+</body>
+</html>

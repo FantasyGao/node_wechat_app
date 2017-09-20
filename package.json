@@ -1,0 +1,38 @@
+{
+  "name": "node-wechat",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "bulid": "node ./bin/www",
+    "open": "opener http://localhost:80",
+    "start": "concurrently \"npm run bulid\" \"npm run open\""
+  },
+  "dependencies": {
+    "body-parser": "~1.15.2",
+    "bootstrap": "^3.3.7",
+    "cheerio": "^0.22.0",
+    "concurrently": "^3.4.0",
+    "cookie-parser": "~1.4.3",
+    "crypto": "0.0.3",
+    "debug": "~2.2.0",
+    "ejs": "~2.5.2",
+    "express": "~4.14.0",
+    "express-session": "^1.15.1",
+    "fontawesome": "^4.7.2",
+    "jquery": "^3.1.1",
+    "mongoose": "^4.9.5",
+    "morgan": "~1.7.0",
+    "mysql": "^2.13.0",
+    "mysql2": "^1.2.0",
+    "opener": "^1.4.3",
+    "request": "^2.79.0",
+    "serve-favicon": "~2.3.0",
+    "socket.io": "^1.1.0",
+    "superagent": "^3.5.2",
+    "superagent-charset": "^1.1.1",
+    "vue": "^2.2.1",
+    "vue-resource": "^1.2.1",
+    "wechat": "^2.0.3",
+    "wechat-api": "^1.32.0"
+  }
+}

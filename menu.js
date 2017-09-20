@@ -1,0 +1,83 @@
+var config = require('./config.js');
+var params = {
+    reqUrl:'https://open.weixin.qq.com/connect/oauth2/authorize?',
+    appid: config.appid,
+    redirect_uri:config.baseUrl+'kefu/user'
+};
+var theUrl=params.reqUrl+'appid='+params.appid+'&redirect_uri='+params.redirect_uri+'&response_type=code&scope=snsapi_userinfo&#wechat_redirect';
+var menu={
+    "button":[
+        {
+            "name":"问题与咨询",
+            "sub_button":[
+                {
+                    "type":"view",
+                    "name":"在线客服",
+                    "url":theUrl
+                },
+                {
+                    "type":"click",
+                    "name":"健康问题留言",
+                    "key":"question_key"
+                }
+            ]
+        },
+        {
+            "name":"最新健康讯",
+            "sub_button":[
+                {
+                    "type":"view",
+                    "name":"健康社区",
+                    "url":"http://health.people.com.cn/"
+                },
+                {
+                    "type":"click",
+                    "name":"精选健康文",
+                    "key":"article_key"
+                },
+                {
+                    "type":"click",
+                    "name":"健康活动社",
+                    "key":"activity_key"
+                },
+                {
+                    "type":"click",
+                    "name":"健康众筹社",
+                    "key":"Crowdfunding_key"
+                },
+                {
+                    "type":"click",
+                    "name":"健康大讲堂",
+                    "key":"lecture_key"
+                }
+           ]
+        },
+        {
+            "name":"健康小工具",
+            "sub_button":[
+                {
+                    "type":"scancode_push",
+                    "name":"扫一扫辨真伪",
+                    "key":"scanf"
+                },
+                {
+                    "type":"view",
+                    "name":"附件的医院",
+                    "url":config.baseUrl+"gaodeditu"
+                },
+                {
+                    "type":"click",
+                    "name":"健康小程序",
+                    "key":"smallApp_key"
+                },
+                {
+                    "type":"click",
+                    "name":"健康APP",
+                    "key":"downloadApp_key"
+                }
+            ]
+        }
+    ]
+}
+
+module.exports = menu;

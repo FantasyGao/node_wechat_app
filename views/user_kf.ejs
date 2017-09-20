@@ -1,0 +1,112 @@
+<%- include head %>
+<link rel='stylesheet' href='/stylesheets/wechat_kefu.css' />
+<meta name="viewport" content="width=720,inital-scale=1.0,user-scalable=no;">
+<div id="container" >
+    <p class="form-control" style="background:#84b8e6">健康号客服为您服务</p>
+        <!--客服房间列表页-->
+    <div id="wrapper2" v-show="!show_room">
+        <ul id="room">
+            <span style="font-size:20px">在线客服（点击房间即可进入）</span>
+            <li v-for="item in roomList" v-on:click="chooseRoom(item)">{{item}}</li>
+        </ul>
+    </div>
+    <!--客服聊天页面-->
+    <div class="chat_page" v-show="show_room">
+        <div id="wrapper1">
+            <ul id="messages">
+            </ul>
+        </div>
+        <div class="form">
+            <textarea id="m"  v-model="send_message">
+            </textarea>
+            <button v-on:click="send(send_message)">发送</button>
+        </div>
+        <div class="right_content">
+            <span><h3 style="margin-left:20px;">健康号客服为你服务！</h3></span>
+                <div>
+                    <img src="/images/kf.png" width="180px" height="100px"></img>
+                    <h4 style="margin:20px 50px">当前由<span id="roomName">客服:{{adminName}}</span>为您服务</h4>
+                </div>
+        </div>
+    </div>
+</div>
+<script src="/javascripts/socket.io.js"></script>
+<script>
+    var app = new Vue({
+        el: '#container',
+        data: {
+            roomList: [],
+            show_room:false,
+            send_message:'',
+            adminName:''
+        },
+        methods:{
+            chooseRoom:function(room){
+                console.log(room);
+                if(confirm("确认进入"+room+"的房间？")){
+                   socket.emit('chooseRoom', room);
+                   this._data.show_room = true;
+                } 
+            },
+            send:function(message){
+                if(this.send_message.trim()==''){return}
+                socket.emit('sendMessage',message);
+                this.send_message = '';
+            }
+        }
+    })
+    var socket = io.connect();
+    function showMsg(msg) {
+        $('#messages').append($('<li>').text(msg));
+    };
+    alert("欢迎使用健康号在线客服");
+    //把拿到的昵称发送给后台
+    socket.emit('userFlag','<%= userInfo.nickname %>|<%= userInfo.province %>-<%= userInfo.city %>|<%= userInfo.headimgurl %>');
+
+    socket.on('userChooseRoom', function(name) {
+        app._data.adminName = name;
+    });
+    socket.on('sendMessage', function(name,msg){
+        console.log(name)
+        if(name.indexOf('|')==-1){
+            var message = name+'说:'+msg;
+            showMsg(message);
+        } else{
+            var myName = name.split("|")[0];
+            var message = '我说:'+msg;
+            showMsg(message);
+        }
+    });
+    socket.on('userEnterRoom',getInfo);
+    //创建房间之后触发
+    socket.on('createRoom', getInfo);
+    //当有操作时刷新房间数目
+    socket.on('flashRoomList', getInfo);
+    //获取房间信息
+    function getInfo(roomObj){
+        var roomList=[];
+        var i=0;
+        for(var key in roomObj){
+            roomList[i]=roomObj[key];
+            i=i+1;
+        }
+        app._data.roomList = unipue(roomList);
+    };
+    //当房间被用户选取时去掉对应房间
+    function unipue(array){
+        var r = [];
+        for(var i = 0, l = array.length; i < l; i++) {
+            var temp = true;
+            for(var j = 0; j < l; j++){
+                if (i!=j&&array[i] === array[j]){
+                    temp = false;
+                }
+            }
+            if(temp){
+                r.push(array[i]);
+            }
+        }
+        return r;
+    };   
+</script>
+<%- include foot %>

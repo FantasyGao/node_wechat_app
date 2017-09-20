@@ -1,0 +1,78 @@
+<%- include head %>
+<div id="index" style="width:100%;height:67px;background:#ded5de;box-shadow: 2px 2px #b5b0b0 ;">
+      <div  style="padding-top:20px">
+        <div class="row">
+            <div class="col-xs-0 col-sm-6"><h3 style="margin-top: -3px;margin-left: 60px;">健康公众号服务系统</h3></div>
+            <div class="col-xs-12 col-sm-2" style="width:12%"><h4>用户名:<%=username %></h4></div>
+            <!--div class="col-xs-12 col-sm-1" v-on:mouseover="toggleUl=!toggleUl">个人中心
+              <ul class="banner_ul" v-show="toggleUl" v-on:mouseover="toggleUl=!toggleUl"> 
+                  <li>个人信息</li>
+                  <li>修改邮箱</li>
+                  <li>修改密码</li>
+              </ul>
+            </div-->
+            <div class="col-xs-12 col-sm-1"><a href="/kefu/admin" style="color:black"><h4>在线解答<h4></a></div>
+            <div class="col-xs-12 col-sm-1"><a href="/question" style="color:black"><h4>问题咨询</h4></a></div>
+            <div class="col-xs-12 col-sm-1"><a href="/answer_all" style="color:black"><h4>群发消息</h4></a></div>
+            <div class="col-xs-12 col-sm-1"><a href="/login" style="color:black"><h4>退    出</h4></a></div>
+        </div>
+      </div>
+<!--div><%= title %></div-->
+<div id="userinfo" style="width:90%;margin-left:5%;padding: 15px;padding:15px">
+   <table class="table">
+      <thead>
+        <tr>
+          <th>序号</th>
+          <th>用户名</th>
+          <th>邮箱</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for = "(item,index) in  allUserInfo">
+           <td>{{index+1}}</td>
+           <td>{{item.userName}}</td>
+           <td>{{item.Email}}</td>
+           <td><a v-on:click="delete_one(item.userName)">删除</a></td>
+        </tr>
+      </tbody>
+   </table>
+</div>
+</div>
+<script>
+var allUserInfofromApi;
+Vue.http.get('/api/admin_all_user_info_api')
+      .then((response)=>{
+            allUserInfofromApi = response.data;
+            app._data.allUserInfo = allUserInfofromApi;
+           // console.log(response);
+          },(response)=>{
+                alert("获取数据失败");
+          })
+
+var app = new Vue({
+  el: '#userinfo',
+  data: {
+      allUserInfo :allUserInfofromApi
+  },    
+  methods:{
+      delete_one:function(name){
+          if(confirm("确认删除该用户？")){
+            this.$http({
+                method:"GET",
+                url:'/api/admin_delete_user_info_api',
+                params:{'username':name}
+                })
+              .then((response)=>{
+                    alert(response.data.msg);
+                  },(response)=>{
+                    alert("删除失败");
+                  })
+          }
+      }
+  }
+})
+</script>
+
+</div>
+<%- include foot %>
