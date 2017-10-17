@@ -10,10 +10,11 @@
  #### 用法：
  
   ``` shell
-  git clone https://github.com/FantasyGao/node_wechat_app & cd node_wechat_app //clone文件到本地；
+  git clone https://github.com/FantasyGao/node_wechat_app  //clone文件到本地；
+  cd node_wechat_app 
   
   npm install //完成安装
   
   node start 
  ```
-
+#### [运行截图](https://github.com/FantasyGao/node_wechat_app/tree/master/APP_RUN_IMAGES)
